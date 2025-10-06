@@ -138,6 +138,8 @@
 
         function copyLink() {
             const url = location.href.substr(0, location.href.lastIndexOf('/') + 1) + document.getElementsByName('q')[0].value;
+            const notification = document.getElementById('copySuccessNotification');
+
             navigator.clipboard.writeText(url)
                 .then(() => {
                     console.info('链接已复制到剪贴板！');
