@@ -1,25 +1,39 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-CN">
 <head>
   <meta charset="utf-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width,initial-scale=1.0">
-  <link rel="shortcut icon" type="image/png" href="/favicon.png" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>GitHub 文件加速</title>
   <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      overflow: hidden; /* ✅ 禁止滚动 */
+    }
+
     body {
       background-color: #282c34;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      min-height: 100vh;
-      margin: 0;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
         "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
         sans-serif;
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
+      color: #eee;
+    }
+
+    h1 {
+      color: #eee;
+      margin: 0 0 40px 0;
+      font-size: 1.8em;
+      text-align: center;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
     }
 
     .flex {
@@ -28,19 +42,14 @@
       align-items: center;
     }
 
-    .block {
-      display: block;
-    }
-
-    /* ✅ 输入框宽度调整为350px */
     .url {
       border: none;
       border-bottom: 1px solid #61dafb;
       background: transparent;
       color: #eee;
-      font-size: 1.2em;
+      font-size: 1.1em;
       width: 350px;
-      max-width: 90vw; /* 移动端适配 */
+      max-width: 90vw;
       padding: 10px 0;
       text-align: center;
       outline: none;
@@ -56,29 +65,24 @@
       display: block;
       width: 350px;
       max-width: 90vw;
+      height: 2px;
     }
 
-    .bar:before,
-    .bar:after {
+    .bar:before, .bar:after {
       content: '';
+      position: absolute;
       height: 2px;
       width: 0;
-      bottom: 0px;
-      position: absolute;
+      bottom: 0;
       background: #61dafb;
-      transition: 0.2s ease all;
+      transition: 0.2s ease;
     }
 
-    .bar:before {
-      left: 50%;
-    }
+    .bar:before { left: 50%; }
+    .bar:after { right: 50%; }
 
-    .bar:after {
-      right: 50%;
-    }
-
-    .url:focus~.bar:before,
-    .url:focus~.bar:after {
+    .url:focus ~ .bar:before,
+    .url:focus ~ .bar:after {
       width: 50%;
     }
 
@@ -89,7 +93,7 @@
       border-radius: 4px;
       cursor: pointer;
       padding: 8px 0;
-      width: 160px;
+      width: 150px;
       margin: 15px 10px;
       font-size: 1em;
     }
@@ -97,75 +101,76 @@
     .btn-container {
       display: flex;
       justify-content: center;
-      align-items: center;
       flex-wrap: wrap;
-      margin: 20px 0;
+      margin-top: 25px;
     }
 
-    h1 {
-      color: #eee;
+    footer {
+      position: absolute;
+      bottom: 15px;
       text-align: center;
-      margin-bottom: 50px;
-      font-size: 1.8em;
+      font-size: 0.8em;
+      color: #aaa;
     }
 
     #copySuccessNotification {
       position: fixed;
-      bottom: 20px;
+      bottom: 60px;
       left: 50%;
       transform: translateX(-50%);
       background-color: rgba(97, 218, 251, 0.9);
       color: #282c34;
       padding: 10px 20px;
       border-radius: 5px;
-      z-index: 1000;
       opacity: 0;
       visibility: hidden;
       transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
     }
 
-    /* ✅ 响应式：优化竖屏手机显示 */
+    @media (max-height: 600px) {
+      body {
+        justify-content: flex-start;
+        padding-top: 40px;
+      }
+      footer {
+        display: none;
+      }
+    }
+
     @media (max-width: 480px) {
       h1 {
         font-size: 1.4em;
-        margin-bottom: 30px;
+        margin-bottom: 25px;
       }
-
       .url {
         width: 90vw;
         font-size: 1em;
       }
-
       .bar {
         width: 90vw;
       }
-
       .btn {
         width: 120px;
         font-size: 0.9em;
       }
-
       .btn-container {
         flex-direction: column;
-        gap: 10px;
-      }
-
-      body {
-        padding: 20px;
+        margin-top: 15px;
       }
     }
   </style>
-
   <script>
     function toSubmit(e) {
       e.preventDefault();
-      const url = location.href.substr(0, location.href.lastIndexOf('/') + 1) + document.getElementsByName('q')[0].value;
+      const q = document.getElementsByName('q')[0].value;
+      const url = location.href.substr(0, location.href.lastIndexOf('/') + 1) + q;
       window.open(url);
       return false;
     }
 
     function copyLink() {
-      const url = location.href.substr(0, location.href.lastIndexOf('/') + 1) + document.getElementsByName('q')[0].value;
+      const q = document.getElementsByName('q')[0].value;
+      const url = location.href.substr(0, location.href.lastIndexOf('/') + 1) + q;
       const notification = document.getElementById('copySuccessNotification');
       navigator.clipboard.writeText(url)
         .then(() => {
@@ -176,35 +181,35 @@
             notification.style.visibility = 'hidden';
           }, 1500);
         })
-        .catch(err => {
-          alert('复制链接失败，请手动复制。');
-        });
+        .catch(() => alert('复制链接失败，请手动复制。'));
     }
   </script>
 </head>
 
-<body class="flex">
-  <h1><a href="https://github.com/hunshcn/gh-proxy" style="color: inherit; text-decoration: none;" target="_blank">GitHub 文件加速</a></h1>
+<body>
+  <h1><a href="https://github.com/hunshcn/gh-proxy" target="_blank">GitHub 文件加速</a></h1>
 
-  <form action="./" method="get" style="padding-bottom: 40px" target="_blank" class="flex" onsubmit="toSubmit(event)">
-    <label class="block" style="width: fit-content">
-      <input class="block url" name="q" type="text" placeholder="键入Github文件链接"
+  <form class="flex" onsubmit="toSubmit(event)">
+    <label>
+      <input class="url" name="q" type="text"
+        placeholder="键入Github文件链接"
         pattern="^((https|http):\/\/)?(github\.com\/.+?\/.+?\/(?:releases|archive|blob|raw|suites)|((?:raw|gist)\.(?:githubusercontent|github)\.com))\/.+$"
-        required="">
+        required>
       <div class="bar"></div>
     </label>
 
     <div class="btn-container">
-      <input class="block btn" type="submit" value="下载">
-      <button class="block btn" type="button" onclick="copyLink()">复制链接</button>
+      <input class="btn" type="submit" value="下载">
+      <button class="btn" type="button" onclick="copyLink()">复制链接</button>
     </div>
   </form>
 
-  <p style="margin-top: 50px; color: #aaa; text-align: center">
-    项目地址：<a href="https://github.com/mlabalabala/ghproxy" target="_blank"
-      style="color: #61dafb; text-decoration: none;">https://github.com/mlabalabala/ghproxy</a>
-  </p>
-  <p style="color: #aaa; font-size: xx-small; text-align: center;">Tips：点击标题跳转源项目~~~</p>
+  <footer>
+    项目地址：
+    <a href="https://github.com/mlabalabala/ghproxy" target="_blank" style="color: #61dafb;">https://github.com/mlabalabala/ghproxy</a>
+    <br>
+    <span style="font-size: 0.7em;">Tips：点击标题跳转源项目~~~</span>
+  </footer>
 
   <div id="copySuccessNotification">复制成功！</div>
 </body>
