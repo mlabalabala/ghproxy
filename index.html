@@ -1,28 +1,26 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>GitHub 文件加速</title>
-  <style>
-    html, body {
-      margin: 0;
-      padding: 0;
-      height: 100%;
-      overflow: hidden; /* ✅ 禁止滚动 */
-    }
-
-    body {
-      background-color: #282c34;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
-        "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
-        sans-serif;
-      color: #eee;
-    }
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GitHub 文件加速</title>
+<style>
+  html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    overflow: hidden;
+  }
+  body {
+    background-color: #282c34;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
+      "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
+    color: #eee;
+  }
 
     h1 {
       color: #eee;
@@ -41,18 +39,17 @@
       flex-direction: column;
       align-items: center;
     }
-
-    .url {
-      border: none;
-      border-bottom: 1px solid #61dafb;
-      background: transparent;
-      color: #eee;
-      font-size: 1.1em;
-      width: 350px;
-      max-width: 90vw;
-      padding: 10px 0;
-      text-align: center;
-      outline: none;
+  .url {
+    border: none;
+    border-bottom: 1px solid #61dafb;
+    background: transparent;
+    color: #eee;
+    font-size: 1.1em;
+    width: 350px;
+    max-width: 90vw;
+    padding: 10px 0;
+    text-align: center;
+    outline: none;
       box-sizing: border-box;
     }
 
@@ -85,131 +82,136 @@
     .url:focus ~ .bar:after {
       width: 50%;
     }
+  .btn {
+    background-color: #61dafb;
+    color: #282c34;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    padding: 8px 0;
+    width: 150px;
+    margin: 15px 10px;
+    font-size: 1em;
+  }
+  .btn-container { display: flex; justify-content: center; flex-wrap: wrap; margin-top: 25px; }
 
-    .btn {
-      background-color: #61dafb;
-      color: #282c34;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      padding: 8px 0;
-      width: 150px;
-      margin: 15px 10px;
-      font-size: 1em;
+  footer {
+    position: absolute;
+    bottom: 15px;
+    text-align: center;
+    font-size: 0.8em;
+    color: #aaa;
+  }
+
+  #copySuccessNotification {
+    position: fixed;
+    bottom: 60px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: rgba(97, 218, 251, 0.9);
+    color: #282c34;
+    padding: 10px 20px;
+    border-radius: 5px;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+  }
+
+  /* ✅ 悬浮二维码样式 */
+  #qrcodeFloating {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: #fff;
+    padding: 10px;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    z-index: 9999;
+    display: none;
+  }
+
+  #qrcodeFloating p {
+    color: #333;
+    font-size: 0.8em;
+    margin: 5px 0 0;
+    text-align: center;
+  }
+</style>
+<link rel="shortcut icon" type="image/png" href="/favicon.png" />
+<script src="scripts/qrcode.js"></script>
+<script>
+  function buildUrl() {
+    const q = document.getElementsByName('q')[0].value;
+    if (!q.trim()) return location.href;
+    return location.href.substr(0, location.href.lastIndexOf('/') + 1) + q;
+  }
+
+  function copyLink() {
+    const url = buildUrl();
+    const note = document.getElementById('copySuccessNotification');
+    navigator.clipboard.writeText(url)
+      .then(() => {
+        note.style.opacity = '1';
+        note.style.visibility = 'visible';
+        setTimeout(() => {
+          note.style.opacity = '0';
+          note.style.visibility = 'hidden';
+        }, 1500);
+      })
+      .catch(() => alert('复制失败，请手动复制'));
+  }
+
+  // ✅ 悬浮二维码逻辑
+  function showQRCode() {
+    const url = buildUrl();
+    const container = document.getElementById('qrcodeFloating');
+    container.style.display = 'block';
+    container.innerHTML = ''; // 清空旧内容
+
+    if (url.length > 1000) {
+      // 内容太长，避免报错
+      const msg = document.createElement('p');
+      msg.textContent = '链接过长，无法生成二维码';
+      container.appendChild(msg);
+      return;
     }
 
-    .btn-container {
-      display: flex;
-      justify-content: center;
-      flex-wrap: wrap;
-      margin-top: 25px;
-    }
+    const qr = document.createElement('div');
+    container.appendChild(qr);
+    new QRCode(qr, { text: url, width: 200, height: 200, correctLevel: QRCode.CorrectLevel.M });
+  }
 
-    footer {
-      position: absolute;
-      bottom: 15px;
-      text-align: center;
-      font-size: 0.8em;
-      color: #aaa;
-    }
-
-    #copySuccessNotification {
-      position: fixed;
-      bottom: 60px;
-      left: 50%;
-      transform: translateX(-50%);
-      background-color: rgba(97, 218, 251, 0.9);
-      color: #282c34;
-      padding: 10px 20px;
-      border-radius: 5px;
-      opacity: 0;
-      visibility: hidden;
-      transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
-    }
-
-    @media (max-height: 600px) {
-      body {
-        justify-content: flex-start;
-        padding-top: 40px;
-      }
-      footer {
-        display: none;
-      }
-    }
-
-    @media (max-width: 480px) {
-      h1 {
-        font-size: 1.4em;
-        margin-bottom: 25px;
-      }
-      .url {
-        width: 90vw;
-        font-size: 1em;
-      }
-      .bar {
-        width: 90vw;
-      }
-      .btn {
-        width: 120px;
-        font-size: 0.9em;
-      }
-      .btn-container {
-        flex-direction: column;
-        margin-top: 15px;
-      }
-    }
-  </style>
-  <link rel="shortcut icon" type="image/png" href="/favicon.png" />
-  <script>
-    function toSubmit(e) {
-      e.preventDefault();
-      const q = document.getElementsByName('q')[0].value;
-      const url = location.href.substr(0, location.href.lastIndexOf('/') + 1) + q;
-      window.open(url);
-      return false;
-    }
-
-    function copyLink() {
-      const q = document.getElementsByName('q')[0].value;
-      const url = location.href.substr(0, location.href.lastIndexOf('/') + 1) + q;
-      const notification = document.getElementById('copySuccessNotification');
-      navigator.clipboard.writeText(url)
-        .then(() => {
-          notification.style.opacity = '1';
-          notification.style.visibility = 'visible';
-          setTimeout(() => {
-            notification.style.opacity = '0';
-            notification.style.visibility = 'hidden';
-          }, 1500);
-        })
-        .catch(() => alert('复制链接失败，请手动复制。'));
-    }
-  </script>
+  function hideQRCode() {
+    const container = document.getElementById('qrcodeFloating');
+    container.style.display = 'none';
+    container.innerHTML = '';
+  }
+</script>
 </head>
 
 <body>
   <h1><a href="https://github.com/hunshcn/gh-proxy" target="_blank">GitHub 文件加速</a></h1>
 
-  <form class="flex" onsubmit="toSubmit(event)">
+  <form class="flex" onsubmit="event.preventDefault(); window.open(buildUrl());">
     <label>
-      <input class="url" name="q" type="text"
-        placeholder="键入Github文件链接"
-        pattern="^((https|http):\/\/)?(github\.com\/.+?\/.+?\/(?:releases|archive|blob|raw|suites)|((?:raw|gist)\.(?:githubusercontent|github)\.com))\/.+$"
-        required>
-      <div class="bar"></div>
+      <input class="url" name="q" type="text" placeholder="键入Github文件链接">
     </label>
 
     <div class="btn-container">
       <input class="btn" type="submit" value="下载">
-      <button class="btn" type="button" onclick="copyLink()">复制链接</button>
+      <button class="btn" type="button"
+        onmouseover="showQRCode()"
+        onmouseout="hideQRCode()"
+        onclick="copyLink()">复制链接</button>
     </div>
   </form>
 
+  <div id="qrcodeFloating"></div>
+
   <footer>
     项目地址：
-    <a href="https://github.com/mlabalabala/ghproxy" target="_blank" style="color: #61dafb;">https://github.com/mlabalabala/ghproxy</a>
-    <br>
-    <span style="font-size: 0.7em;">Tips：点击标题跳转源项目~~~</span>
+    <a href="https://github.com/mlabalabala/ghproxy" target="_blank" style="color:#61dafb;">https://github.com/mlabalabala/ghproxy</a>
+    <br><span style="font-size:0.7em;">Tips：点击标题跳转源项目~~~</span>
   </footer>
 
   <div id="copySuccessNotification">复制成功！</div>
